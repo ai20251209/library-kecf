@@ -158,8 +158,9 @@ export default function AdminMembersPage() {
     const q = searchQuery.toLowerCase();
     const matchSearch = m.name.toLowerCase().includes(q) || m.barcode.toLowerCase().includes(q) || m.schoolName.toLowerCase().includes(q);
     const matchGrade = gradeFilter === 'all' || (
-      gradeFilter === 'elem' ? m.grade.includes('초등') :
-      gradeFilter === 'middle' ? m.grade.includes('중학') : true
+      gradeFilter === 'student' ? m.role === 'student' :
+      gradeFilter === 'teacher' ? m.role === 'teacher' :
+      gradeFilter === 'general' ? m.role === 'general' : true
     );
     return matchSearch && matchGrade;
   });
@@ -176,7 +177,7 @@ export default function AdminMembersPage() {
           </Link>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-2">
             <Users className="w-7 h-7 text-purple-600" />
-            회원 명부 관리 (3,000명 규모)
+            회원 명부 관리 (학생 · 교사 · 일반/학부모)
           </h1>
         </div>
 
@@ -213,14 +214,14 @@ export default function AdminMembersPage() {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="회원 이름, 바코드번호, 학교명 검색..."
+            placeholder="회원 이름, 바코드번호, 소속/학교 검색..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
 
-        <div className="flex items-center space-x-2 text-xs self-start sm:self-auto">
+        <div className="flex items-center space-x-2 text-xs self-start sm:self-auto flex-wrap gap-1">
           <span className="text-slate-400 font-medium">구분 필터:</span>
           <button
             onClick={() => setGradeFilter('all')}
@@ -231,20 +232,28 @@ export default function AdminMembersPage() {
             전체 ({members.length}명)
           </button>
           <button
-            onClick={() => setGradeFilter('elem')}
+            onClick={() => setGradeFilter('student')}
             className={`px-3 py-1.5 rounded-xl font-semibold transition ${
-              gradeFilter === 'elem' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'
+              gradeFilter === 'student' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'
             }`}
           >
-            초등학생
+            학생
           </button>
           <button
-            onClick={() => setGradeFilter('middle')}
+            onClick={() => setGradeFilter('teacher')}
             className={`px-3 py-1.5 rounded-xl font-semibold transition ${
-              gradeFilter === 'middle' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600'
+              gradeFilter === 'teacher' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'
             }`}
           >
-            중학생
+            교사
+          </button>
+          <button
+            onClick={() => setGradeFilter('general')}
+            className={`px-3 py-1.5 rounded-xl font-semibold transition ${
+              gradeFilter === 'general' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600'
+            }`}
+          >
+            일반/학부모
           </button>
         </div>
       </div>
@@ -270,9 +279,18 @@ export default function AdminMembersPage() {
                   {m.role === 'teacher' && (
                     <span className="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded">교사</span>
                   )}
+                  {m.role === 'general' && (
+                    <span className="text-[10px] bg-purple-600 text-white px-1.5 py-0.5 rounded">일반/학부모</span>
+                  )}
+                  {m.role === 'student' && (
+                    <span className="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded">학생</span>
+                  )}
                 </h3>
                 <p className="text-xs text-slate-500">{m.schoolName} · {m.grade}</p>
-                <p className="font-mono text-[11px] text-slate-400 mt-1">코드: <strong className="text-slate-700">{m.barcode}</strong></p>
+                <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1">
+                  <span>생일: <strong className="text-slate-700">{m.birthDate || '0512'}</strong></span>
+                  <span className="font-mono">{m.barcode}</span>
+                </div>
               </div>
             </div>
 
@@ -377,8 +395,9 @@ export default function AdminMembersPage() {
                     onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg"
                   >
-                    <option value="student">학생</option>
-                    <option value="teacher">교사/선생님</option>
+                    <option value="student">학생 (초등/중등)</option>
+                    <option value="teacher">교사 / 선생님</option>
+                    <option value="general">일반회원 (학부모/지역주민)</option>
                     <option value="admin">사서 관리자</option>
                   </select>
                 </div>
@@ -386,18 +405,18 @@ export default function AdminMembersPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">학교명</label>
+                  <label className="block font-semibold text-slate-700 mb-1">소속 / 학교명</label>
                   <input
                     type="text"
                     value={formData.schoolName || ''}
                     onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
-                    placeholder="예: 별빛초등학교"
+                    placeholder="예: 별빛초등학교 또는 별빛마을주민"
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">학년 / 직급</label>
+                  <label className="block font-semibold text-slate-700 mb-1">학년 / 회원 분류</label>
                   <select
                     value={formData.grade || '초등 4학년'}
                     onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
@@ -413,6 +432,8 @@ export default function AdminMembersPage() {
                     <option value="중학교 2학년">중학교 2학년</option>
                     <option value="중학교 3학년">중학교 3학년</option>
                     <option value="교사">교사</option>
+                    <option value="학부모">학부모</option>
+                    <option value="지역주민(일반)">지역주민 (일반)</option>
                     <option value="작은도서관 사서">작은도서관 사서</option>
                   </select>
                 </div>

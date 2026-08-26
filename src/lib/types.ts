@@ -48,7 +48,7 @@ export interface Member {
   birthDate: string; // 생년월일 4자리 MMDD (예: "0512")
   grade: string; // 예: "초등 3학년", "초등 6학년", "중학교 2학년"
   schoolName: string;
-  role: 'student' | 'teacher' | 'admin';
+  role: 'student' | 'teacher' | 'general' | 'admin';
   avatarEmoji: string;
   readingPoints: number;
   level: number; // 독서 레벨 (1~10)
