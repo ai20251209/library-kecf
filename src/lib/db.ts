@@ -377,6 +377,8 @@ export const DEFAULT_LIBRARY_CONFIG: LibraryConfig = {
   location: '마을 커뮤니티 센터 2층',
   adminPin: '1234',
   enableYes24Sync: true,
+  appMode: 'public_library',
+  ownerName: '독서 탐험가',
 };
 
 export const getStoredLibraryConfig = (): LibraryConfig => {

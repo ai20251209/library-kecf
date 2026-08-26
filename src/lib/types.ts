@@ -43,15 +43,19 @@ export interface Book {
   }[];
 }
 
+export type AppMode = 'public_library' | 'personal_library'; // 🏛️ 작은도서관 운영 모드 | 🛋️ 1인 나만의 도서관 모드
+
 export interface LibraryConfig {
-  libraryName: string; // 도서관 명칭 (예: 별빛 작은도서관)
+  libraryName: string; // 도서관/서재 명칭 (예: 별빛 작은도서관 or 김민준의 AI 나만의 서재)
   subTitle: string;    // 슬로건
   contactPhone: string;
   location: string;
-  adminPin: string;    // 사서 마스터 PIN (기본: 1234)
+  adminPin: string;    // 사서/서재 PIN (기본: 1234)
   geminiApiKey?: string;
   enableYes24Sync: boolean;
   themeColor?: string;
+  appMode?: AppMode;   // 'public_library' | 'personal_library'
+  ownerName?: string;  // 1인 서재 주인 이름
 }
 
 export interface Member {
