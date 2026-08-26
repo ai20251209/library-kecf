@@ -14,12 +14,7 @@ import {
   Key, 
   Check, 
   X,
-  Layers,
-  Home,
-  PlusCircle,
-  Bookmark,
-  ToggleLeft,
-  ToggleRight
+  Layers
 } from 'lucide-react';
 import { 
   getCurrentUser, 
@@ -27,8 +22,7 @@ import {
   getStoredMembers, 
   getStoredApiKey, 
   saveStoredApiKey,
-  getStoredLibraryConfig,
-  saveStoredLibraryConfig
+  getStoredLibraryConfig
 } from '@/lib/db';
 import { Member, LibraryConfig } from '@/lib/types';
 import StudentLoginModal from '@/components/StudentLoginModal';
@@ -39,7 +33,6 @@ export default function Navbar() {
   const [membersList, setMembersList] = useState<Member[]>([]);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [isApiModalOpen, setIsApiModalOpen] = useState(false);
-  const [isModeModalOpen, setIsModeModalOpen] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [apiKeySaved, setApiKeySaved] = useState(false);
   const [libConfig, setLibConfig] = useState<LibraryConfig | null>(null);
@@ -61,52 +54,24 @@ export default function Navbar() {
     }, 1200);
   };
 
-  const handleToggleMode = (newMode: 'public_library' | 'personal_library') => {
-    if (!libConfig) return;
-    const updated: LibraryConfig = {
-      ...libConfig,
-      appMode: newMode,
-      libraryName: newMode === 'personal_library' 
-        ? `${currentUser?.name || '독서가'}의 나만의 AI 서재` 
-        : '별빛 북스페이스 작은도서관',
-      subTitle: newMode === 'personal_library'
-        ? '나만을 위한 1인 AI 도서관 & 독서 연구소'
-        : '초·중학생을 위한 AI 독서 메이트 & 스마트 작은도서관',
-    };
-    saveStoredLibraryConfig(updated);
-    setLibConfig(updated);
-    setIsModeModalOpen(false);
-    window.location.reload();
-  };
-
-  const isPersonalMode = libConfig?.appMode === 'personal_library';
-
   return (
     <>
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             
-            {/* Logo & Brand */}
+            {/* Logo */}
             <div className="flex items-center space-x-3">
               <Link href="/" className="flex items-center space-x-2 group">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md transition-transform group-hover:scale-105 ${
-                  isPersonalMode 
-                    ? 'bg-gradient-to-tr from-amber-500 to-rose-500 shadow-amber-500/20' 
-                    : 'bg-gradient-to-tr from-brand-600 to-cosmic-500 shadow-brand-500/20'
-                }`}>
-                  {isPersonalMode ? '🛋️' : <BookOpen className="w-5 h-5" />}
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-cosmic-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20 group-hover:scale-105 transition-transform">
+                  <BookOpen className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="text-xl font-black bg-gradient-to-r from-slate-900 via-brand-800 to-indigo-900 bg-clip-text text-transparent">
-                    {libConfig?.libraryName || (isPersonalMode ? '나만의 AI 서재' : '별빛 북스페이스')}
+                  <span className="text-xl font-bold bg-gradient-to-r from-brand-700 via-cosmic-600 to-indigo-600 bg-clip-text text-transparent">
+                    {libConfig?.libraryName || '별빛 북스페이스'}
                   </span>
-                  <span className={`hidden sm:inline-block ml-2 text-xs px-2.5 py-0.5 rounded-full font-bold border ${
-                    isPersonalMode 
-                      ? 'bg-amber-50 text-amber-800 border-amber-300' 
-                      : 'bg-brand-50 text-brand-700 border-brand-200'
-                  }`}>
-                    {isPersonalMode ? '🛋️ 1인 나만의 서재' : '🏛️ AI 작은도서관'}
+                  <span className="hidden sm:inline-block ml-2 text-xs px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 font-medium border border-brand-200">
+                    AI 작은도서관
                   </span>
                 </div>
               </Link>
@@ -123,34 +88,20 @@ export default function Navbar() {
                 }`}
               >
                 <Compass className="w-4 h-4" />
-                <span>{isPersonalMode ? '내 서재 도서들' : '도서 탐색'}</span>
+                <span>도서 탐색</span>
               </Link>
 
-              {isPersonalMode ? (
-                <Link
-                  href="/admin/books"
-                  className={`flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    pathname.startsWith('/admin/books')
-                      ? 'bg-amber-50 text-amber-800 font-semibold border border-amber-200'
-                      : 'text-slate-600 hover:text-amber-700 hover:bg-amber-50/50'
-                  }`}
-                >
-                  <PlusCircle className="w-4 h-4 text-amber-600" />
-                  <span>+ 내 책 등록 (YES24 연동)</span>
-                </Link>
-              ) : (
-                <Link
-                  href="/ai-lounge"
-                  className={`flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    pathname.startsWith('/ai-lounge')
-                      ? 'bg-cosmic-50 text-cosmic-700 font-semibold'
-                      : 'text-slate-600 hover:text-cosmic-600 hover:bg-slate-50'
-                  }`}
-                >
-                  <Sparkles className="w-4 h-4 text-cosmic-500" />
-                  <span>AI 독서 라운지</span>
-                </Link>
-              )}
+              <Link
+                href="/ai-lounge"
+                className={`flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  pathname.startsWith('/ai-lounge')
+                    ? 'bg-cosmic-50 text-cosmic-700 font-semibold'
+                    : 'text-slate-600 hover:text-cosmic-600 hover:bg-slate-50'
+                }`}
+              >
+                <Sparkles className="w-4 h-4 text-cosmic-500" />
+                <span>AI 독서 라운지</span>
+              </Link>
 
               <Link
                 href="/my-library"
@@ -161,10 +112,10 @@ export default function Navbar() {
                 }`}
               >
                 <BookmarkCheck className="w-4 h-4 text-amber-500" />
-                <span>{isPersonalMode ? '독서장 & AI 생각노트' : '내 독서 통장'}</span>
+                <span>내 독서 통장</span>
               </Link>
 
-              {/* Admin Menu */}
+              {/* Admin Menu with Lock indicator */}
               <Link
                 href="/admin"
                 className={`flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -172,42 +123,28 @@ export default function Navbar() {
                     ? 'bg-slate-900 text-white font-semibold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
-                title="관리자 설정 & 도서관 운영"
+                title="사서 관리자 LMS (비밀번호 잠금)"
               >
                 <ShieldCheck className="w-4 h-4 text-indigo-400" />
-                <span>{isPersonalMode ? '서재 관리' : '사서 LMS'}</span>
+                <span>사서 LMS</span>
                 <span className="text-[10px] bg-slate-200 text-slate-700 px-1 py-0.2 rounded font-mono">🔒</span>
               </Link>
             </nav>
 
-            {/* Right Actions (Mode Switcher + API Key + Profile) */}
+            {/* Right Actions (API key + User Switcher) */}
             <div className="flex items-center space-x-2">
               
-              {/* Mode Switcher Button */}
-              <button
-                onClick={() => setIsModeModalOpen(true)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm border ${
-                  isPersonalMode
-                    ? 'bg-amber-500 text-white hover:bg-amber-600 border-amber-600'
-                    : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200'
-                }`}
-                title="작은도서관 운영 모드 ⇄ 1인 나만의 서재 모드 전환"
-              >
-                <span>{isPersonalMode ? '🛋️ 1인 서재 모드' : '🏛️ 도서관 모드'}</span>
-                <span className="text-[10px] opacity-75">전환</span>
-              </button>
-
               {/* API Key Modal Button */}
               <button
                 onClick={() => setIsApiModalOpen(true)}
                 className="p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-lg text-xs flex items-center space-x-1 transition"
-                title="Google AI Studio Gemini 키 설정"
+                title="Gemini AI API Key 설정"
               >
                 <Key className="w-4 h-4 text-amber-500" />
                 <span className="hidden lg:inline text-slate-600">AI 설정</span>
               </button>
 
-              {/* Current User Profile */}
+              {/* Current User Switcher Button */}
               {currentUser && (
                 <button
                   onClick={() => setIsUserModalOpen(true)}
@@ -233,102 +170,22 @@ export default function Navbar() {
         <div className="md:hidden flex items-center justify-around py-2 border-t border-slate-200 bg-white text-xs">
           <Link href="/books" className={`flex flex-col items-center py-1 ${pathname.startsWith('/books') ? 'text-brand-600 font-bold' : 'text-slate-600'}`}>
             <Compass className="w-4 h-4" />
-            <span>{isPersonalMode ? '내서재' : '도서탐색'}</span>
+            <span>도서탐색</span>
+          </Link>
+          <Link href="/ai-lounge" className={`flex flex-col items-center py-1 ${pathname.startsWith('/ai-lounge') ? 'text-cosmic-600 font-bold' : 'text-slate-600'}`}>
+            <Sparkles className="w-4 h-4" />
+            <span>AI라운지</span>
           </Link>
           <Link href="/my-library" className={`flex flex-col items-center py-1 ${pathname.startsWith('/my-library') ? 'text-amber-600 font-bold' : 'text-slate-600'}`}>
             <BookmarkCheck className="w-4 h-4" />
-            <span>{isPersonalMode ? '생각노트' : '독서통장'}</span>
-          </Link>
-          <Link href="/admin/books" className={`flex flex-col items-center py-1 ${pathname.startsWith('/admin/books') ? 'text-amber-600 font-bold' : 'text-slate-600'}`}>
-            <PlusCircle className="w-4 h-4" />
-            <span>+도서등록</span>
+            <span>독서통장</span>
           </Link>
           <Link href="/admin" className={`flex flex-col items-center py-1 ${pathname.startsWith('/admin') ? 'text-slate-900 font-bold' : 'text-slate-600'}`}>
             <ShieldCheck className="w-4 h-4" />
-            <span>{isPersonalMode ? '서재설정' : '사서LMS'}</span>
+            <span>사서LMS 🔒</span>
           </Link>
         </div>
       </header>
-
-      {/* Mode Switcher Modal */}
-      {isModeModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 space-y-6">
-            
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                <span>🔄 도서관 운영 모드 선택</span>
-              </h3>
-              <button onClick={() => setIsModeModalOpen(false)} className="text-slate-400 hover:text-slate-600">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <p className="text-xs text-slate-600 leading-relaxed">
-              노트북 1대로 작은도서관을 운영하시나요, 아니면 개인 노트북에 나만의 1인 서재를 구축하시나요? 목적에 맞게 인터페이스를 즉시 전환할 수 있습니다.
-            </p>
-
-            <div className="grid grid-cols-1 gap-3 text-left">
-              
-              {/* Mode 1: Public Small Library */}
-              <button
-                type="button"
-                onClick={() => handleToggleMode('public_library')}
-                className={`p-4 rounded-2xl border-2 transition text-left space-y-1.5 ${
-                  !isPersonalMode
-                    ? 'border-indigo-600 bg-indigo-50/50 shadow-md ring-2 ring-indigo-500/20'
-                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-black text-slate-900 text-sm flex items-center gap-2">
-                    <span>🏛️</span>
-                    <span>작은도서관 운영 모드</span>
-                  </span>
-                  {!isPersonalMode && <span className="text-xs font-bold text-indigo-700 bg-indigo-100 px-2.5 py-0.5 rounded-full">현재 적용 중</span>}
-                </div>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  마을/학교/아파트 작은도서관용. 다수 회원 관리, 대출/반납 카운터, 바코드 회원증, 장서 점검 기능 활성화.
-                </p>
-              </button>
-
-              {/* Mode 2: Personal 1-Person Library */}
-              <button
-                type="button"
-                onClick={() => handleToggleMode('personal_library')}
-                className={`p-4 rounded-2xl border-2 transition text-left space-y-1.5 ${
-                  isPersonalMode
-                    ? 'border-amber-500 bg-amber-50/50 shadow-md ring-2 ring-amber-500/20'
-                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-black text-slate-900 text-sm flex items-center gap-2">
-                    <span>🛋️</span>
-                    <span>1인 나만의 AI 서재 모드</span>
-                  </span>
-                  {isPersonalMode && <span className="text-xs font-bold text-amber-800 bg-amber-200 px-2.5 py-0.5 rounded-full">현재 적용 중</span>}
-                </div>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  개인 노트북/서재용. 내가 소장한 책·읽고 싶은 책 YES24 원클릭 등록, 1:1 AI 독서 코치 및 심층 대화 스크랩 집중.
-                </p>
-              </button>
-
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                type="button"
-                onClick={() => setIsModeModalOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-800"
-              >
-                닫기
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
 
       {/* Student Login & Profile Modal */}
       <StudentLoginModal

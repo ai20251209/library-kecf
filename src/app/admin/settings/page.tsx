@@ -193,80 +193,7 @@ export default function AdminSettingsPage() {
       )}
 
       <form onSubmit={handleSaveConfig} className="space-y-8">
-        {/* Section 0: App Mode Switcher (1-Person Personal Library vs Small Library) */}
-        <div className="bg-gradient-to-r from-amber-500/10 via-brand-500/10 to-indigo-500/10 rounded-3xl p-6 sm:p-8 border border-amber-200 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-amber-200/60">
-            <div>
-              <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                운영 패러다임 선택
-              </span>
-              <h2 className="text-lg font-black text-slate-900 mt-1 flex items-center gap-2">
-                <span>🎯 프로그램 운영 모드 설정</span>
-              </h2>
-            </div>
-          </div>
-
-          <p className="text-xs text-slate-600 leading-relaxed">
-            마을/학교 작은도서관 운영용으로 사용할지, 이용자 개인의 노트북에 <strong>1인 나만의 AI 서재</strong>로 설치하여 사용할지 선택하세요.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <button
-              type="button"
-              onClick={() => setConfig({
-                ...config,
-                appMode: 'public_library',
-                libraryName: config.appMode === 'personal_library' ? '별빛 북스페이스 작은도서관' : config.libraryName,
-                subTitle: '초·중학생을 위한 AI 독서 메이트 & 스마트 작은도서관'
-              })}
-              className={`p-4 rounded-2xl border-2 text-left space-y-2 transition ${
-                config.appMode !== 'personal_library'
-                  ? 'border-indigo-600 bg-white shadow-md ring-2 ring-indigo-500/20'
-                  : 'border-slate-200 bg-white/60 hover:bg-white'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-black text-slate-900 text-sm flex items-center gap-1.5">
-                  <span>🏛️</span> 작은도서관 운영 모드
-                </span>
-                {config.appMode !== 'personal_library' && (
-                  <span className="text-[10px] font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">선택됨</span>
-                )}
-              </div>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                다수 학생/회원 관리, 바코드 대출·반납, 장서 통계, 사서 전용 LMS 활성화.
-              </p>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setConfig({
-                ...config,
-                appMode: 'personal_library',
-                libraryName: config.appMode !== 'personal_library' ? '나만의 AI 서재' : config.libraryName,
-                subTitle: '나만을 위한 1인 AI 도서관 & 독서 연구소'
-              })}
-              className={`p-4 rounded-2xl border-2 text-left space-y-2 transition ${
-                config.appMode === 'personal_library'
-                  ? 'border-amber-500 bg-white shadow-md ring-2 ring-amber-500/20'
-                  : 'border-slate-200 bg-white/60 hover:bg-white'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-black text-slate-900 text-sm flex items-center gap-1.5">
-                  <span>🛋️</span> 1인 나만의 AI 서재 모드
-                </span>
-                {config.appMode === 'personal_library' && (
-                  <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">선택됨</span>
-                )}
-              </div>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                개인 소장도서 및 읽고 싶은 책 YES24 원클릭 등록, 1:1 AI 심층 대화 스크랩 노트 집중.
-              </p>
-            </button>
-          </div>
-        </div>
-
+        
         {/* Section 1: Library Identity */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
           <div className="flex items-center space-x-3 pb-4 border-b border-slate-100">
@@ -274,8 +201,8 @@ export default function AdminSettingsPage() {
               <Building2 className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900">1. {config.appMode === 'personal_library' ? '나만의 서재 명칭 & 브랜딩' : '우리 도서관 기본 정보'}</h2>
-              <p className="text-xs text-slate-500">화면 상단 및 독서장에 표시될 명칭과 슬로건입니다.</p>
+              <h2 className="text-base font-bold text-slate-900">1. 우리 도서관 기본 정보</h2>
+              <p className="text-xs text-slate-500">도서관 화면 상단 및 영수증, 바코드증에 표시될 정보입니다.</p>
             </div>
           </div>
 
