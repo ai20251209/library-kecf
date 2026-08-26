@@ -614,8 +614,13 @@ export default function AdminBooksPage() {
                         <span className="px-2 py-0.5 rounded bg-orange-100 text-orange-800 text-[10px] font-bold">
                           {item.category}
                         </span>
+                        {item.isbn && (
+                          <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-mono font-bold">
+                            ISBN: {item.isbn}
+                          </span>
+                        )}
                         {item.price && (
-                          <span className="text-xs font-bold text-slate-900">
+                          <span className="text-xs font-bold text-slate-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                             정가: {item.price.toLocaleString()}원
                           </span>
                         )}
