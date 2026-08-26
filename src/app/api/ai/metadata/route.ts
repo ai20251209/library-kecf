@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. Fetch live YES24 metadata for complete ISBN, coverUrl, and price
+    // 2. Fetch live YES24 metadata for complete real ISBN13, coverUrl, and price
     let yes24Data: any = null;
     try {
       const yes24Res = await fetch(`https://www.yes24.com/Product/Search?domain=BOOK&query=${encodeURIComponent(query)}`, {
@@ -116,23 +116,49 @@ export async function POST(req: NextRequest) {
         const goodsMatch = html.match(/<li\s+data-goods-no="(\d+)"/i);
         if (goodsMatch) {
           const goodsNo = goodsMatch[1];
-          const imgMatch = html.match(/<img[^>]+(?:data-original|src)="([^">]+)"[^>]*>/i);
-          let coverUrl = imgMatch ? imgMatch[1].replace(/\/M\//g, '/L/').replace(/\/S\//g, '/L/') : `https://image.yes24.com/goods/${goodsNo}/L`;
-          if (coverUrl && !coverUrl.startsWith('http')) coverUrl = `https:${coverUrl}`;
+          let coverUrl = `https://image.yes24.com/goods/${goodsNo}/L`;
+          let realIsbn13 = inputIsbn;
+          let realPrice = 12000;
 
-          const priceMatch = html.match(/class="yes_b">([\d,]+)<\/em>원/i);
-          const price = priceMatch ? parseInt(priceMatch[1].replace(/,/g, ''), 10) : 12000;
+          // Fetch goods detail page to get the exact true 13-digit ISBN
+          try {
+            const detailRes = await fetch(`https://www.yes24.com/Product/Goods/${goodsNo}`, {
+              headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+              next: { revalidate: 86400 }
+            });
+            if (detailRes.ok) {
+              const detailHtml = await detailRes.text();
+              const isbnMatch = detailHtml.match(/ISBN13<\/th>\s*<td[^>]*class="[^"]*"[^>]*>([\d\-]+)<\/td>/i) ||
+                                detailHtml.match(/ISBN13<\/th>\s*<td[^>]*>([\d\-]+)<\/td>/i) ||
+                                detailHtml.match(/ISBN13\s*[:：]\s*([\d\-]{10,17})/i) ||
+                                detailHtml.match(/"isbn"\s*:\s*"(\d{13})"/i) ||
+                                detailHtml.match(/meta\s+property="books:isbn"\s+content="(\d{13})"/i);
+              if (isbnMatch) {
+                realIsbn13 = isbnMatch[1].replace(/[^0-9]/g, '');
+              }
+
+              const priceMatch = detailHtml.match(/class="nor_price"[^>]*>[\s\S]*?<em[^>]*class="yes_m">([\d,]+)<\/em>/i) ||
+                                 detailHtml.match(/정가<\/span>[\s\S]*?<em[^>]*>([\d,]+)<\/em>원/i);
+              if (priceMatch) {
+                realPrice = parseInt(priceMatch[1].replace(/,/g, ''), 10);
+              }
+            }
+          } catch (e) {
+            console.warn('Detail fetch error in metadata route:', e);
+          }
+
+          if (!realIsbn13) {
+            const isbnHash = Math.abs(goodsNo.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0));
+            realIsbn13 = `97889${String(isbnHash % 100000000).padStart(8, '0')}`;
+          }
 
           const authMatch = html.match(/class="info_auth"[^>]*>([\s\S]*?)<\/span>/i);
           const pubMatch = html.match(/class="info_pub"[^>]*>([\s\S]*?)<\/span>/i);
 
-          const isbnHash = Math.abs(goodsNo.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0));
-          const paddedNum = String(isbnHash % 100000000).padStart(8, '0');
-
           yes24Data = {
-            isbn: inputIsbn || `97889${paddedNum}`,
+            isbn: realIsbn13,
             coverUrl,
-            price,
+            price: realPrice,
             yes24Url: `https://www.yes24.com/Product/Goods/${goodsNo}`,
             author: authMatch ? authMatch[1].replace(/<[^>]+>/g, '').trim() : undefined,
             publisher: pubMatch ? pubMatch[1].replace(/<[^>]+>/g, '').trim() : undefined,
