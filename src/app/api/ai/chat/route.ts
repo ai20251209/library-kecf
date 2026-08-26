@@ -30,16 +30,16 @@ export async function POST(req: NextRequest) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const systemPrompt = getSystemPromptForLevel(level, bookContext);
 
-    // List of candidate models (prioritizing modern Flash models)
+    // List of candidate models prioritizing gemini-3.6-flash and gemini-3.5-flash
     const candidateModels = [
       userModel,
       process.env.GEMINI_MODEL,
+      'gemini-3.6-flash',
+      'gemini-3.5-flash',
+      'gemini-3.0-flash',
+      'gemini-2.5-flash',
       'gemini-2.0-flash',
-      'gemini-2.0-flash-exp',
       'gemini-1.5-flash',
-      'gemini-1.5-flash-latest',
-      'gemini-1.5-flash-002',
-      'gemini-1.5-flash-8b',
     ].filter(Boolean) as string[];
 
     let responseText = '';
