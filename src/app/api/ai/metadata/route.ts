@@ -96,9 +96,12 @@ export async function POST(req: NextRequest) {
     const { title, isbn: inputIsbn, userApiKey, userModel } = await req.json();
     const query = (title || '').trim();
 
-    // 1. Check known dictionary for 100% complete instant precision
+    const cleanQuery = query.replace(/\s+/g, '').toLowerCase();
+
+    // 1. Check known dictionary for 100% complete instant precision (whitespace & case insensitive)
     for (const [key, val] of Object.entries(KNOWN_BOOKS)) {
-      if (query.includes(key) || key.includes(query)) {
+      const cleanKey = key.replace(/\s+/g, '').toLowerCase();
+      if (cleanQuery.includes(cleanKey) || cleanKey.includes(cleanQuery)) {
         return NextResponse.json({ ...val, isSimulated: false });
       }
     }

@@ -168,9 +168,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: true, items: [] });
     }
 
-    // 1. Direct dictionary match for sub-millisecond precision
+    const cleanQuery = query.replace(/\s+/g, '').toLowerCase();
+
+    // 1. Direct dictionary match for sub-millisecond precision (whitespace & case insensitive)
     for (const [key, bookData] of Object.entries(POPULAR_BOOK_DB)) {
-      if (query.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(query.toLowerCase())) {
+      const cleanKey = key.replace(/\s+/g, '').toLowerCase();
+      if (cleanQuery.includes(cleanKey) || cleanKey.includes(cleanQuery)) {
         return NextResponse.json({
           success: true,
           query,
