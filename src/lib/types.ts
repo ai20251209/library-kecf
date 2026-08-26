@@ -114,3 +114,16 @@ export interface AIThinkingPrompt {
   title: string;
   prompt: string;
 }
+
+export interface SavedAiDialogue {
+  id: string;
+  bookId: string;
+  bookTitle: string;
+  bookCoverUrl?: string;
+  category?: string;
+  userQuestion: string;
+  aiResponse: string;
+  savedAt: string; // YYYY.MM.DD HH:mm:ss
+  targetLevel?: string;
+}
+

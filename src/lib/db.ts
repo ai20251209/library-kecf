@@ -397,3 +397,44 @@ export const saveStoredLibraryConfig = (config: LibraryConfig) => {
   if (typeof window === 'undefined') return;
   localStorage.setItem(STORAGE_KEYS.LIBRARY_CONFIG, JSON.stringify(config));
 };
+
+// Saved AI Dialogues (Personal Reading Journal Scrap Note)
+export const getStoredSavedDialogues = (): import('./types').SavedAiDialogue[] => {
+  if (typeof window === 'undefined') return [];
+  const saved = localStorage.getItem('starry_saved_dialogues_v1');
+  if (!saved) return [];
+  try {
+    return JSON.parse(saved);
+  } catch (e) {
+    return [];
+  }
+};
+
+export const saveStoredSavedDialogue = (
+  item: Omit<import('./types').SavedAiDialogue, 'id' | 'savedAt'>
+): import('./types').SavedAiDialogue => {
+  const list = getStoredSavedDialogues();
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const formattedDate = `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+  const newDialogue: import('./types').SavedAiDialogue = {
+    ...item,
+    id: `scrap-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+    savedAt: formattedDate,
+  };
+
+  const updated = [newDialogue, ...list];
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('starry_saved_dialogues_v1', JSON.stringify(updated));
+  }
+  return newDialogue;
+};
+
+export const deleteStoredSavedDialogue = (id: string): void => {
+  if (typeof window === 'undefined') return;
+  const list = getStoredSavedDialogues();
+  const updated = list.filter(d => d.id !== id);
+  localStorage.setItem('starry_saved_dialogues_v1', JSON.stringify(updated));
+};
+
