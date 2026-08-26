@@ -163,12 +163,72 @@ const SERIES_MASTER_DB: Record<string, Yes24BookItem[]> = {
       author: '손원평',
       publisher: '창비',
       publishYear: 2017,
-      isbn: '9788936434120',
+      isbn: '9788936434267',
       price: 12000,
-      coverUrl: 'https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788936434120.jpg',
-      yes24Url: 'https://www.yes24.com/Product/Search?domain=BOOK&query=9788936434120',
+      coverUrl: 'https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788936434267.jpg',
+      yes24Url: 'https://www.yes24.com/Product/Search?domain=BOOK&query=9788936434267',
       category: '문학/동화',
-      summary: '뇌 속 편도체(아몬드) 크기가 작아 분노도 공포도 느끼지 못하는 알렉시티미아(감정표현불능증)를 앓는 16세 소년 윤재. 비극적인 사고로 가족을 잃고 세상에 홀로 남겨진 윤재 앞에, 어두운 상처로 가득 찬 소년 \'곤이\'와 맑은 영혼의 소녀 \'도라\'가 나타납니다. 서로의 결핍을 마주하며 타인의 고통에 공감하는 법을 배워가는 뭉클한 청소년 성장 소설입니다.',
+      summary: '뇌 속 편도체(아몬드) 크기가 작아 분노도 공포도 느끼지 못하는 알렉시티미아(감정표현불능증)를 앓는 16세 소년 윤재. 비극적인 사고로 가족을 잃고 세상에 홀로 남겨진 윤재 앞에, 어두운 상처로 가득 찬 소년 \'곤이\'와 맑은 영혼의 소녀 \'도라\'가 나타납니다. 서로의 결핍을 마주하며 타인의 고통에 공감하는 법을 배워가는 뭉클한 청소년 필독 성장 소설입니다.',
+    }
+  ],
+  '강아지 똥': [
+    {
+      id: 'yes24-p1',
+      title: '강아지 똥',
+      author: '권정생 글 / 정승각 그림',
+      publisher: '길벗어린이',
+      publishYear: 1996,
+      isbn: '9788986621136',
+      price: 11000,
+      coverUrl: 'https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788986621136.jpg',
+      yes24Url: 'https://www.yes24.com/Product/Search?domain=BOOK&query=9788986621136',
+      category: '문학/동화',
+      summary: '길가에 버려져 참새, 흙덩이 등 모두에게 더럽다고 놀림받던 강아지 똥. 자신이 세상에 아무 쓸모도 없는 존재라며 슬퍼하던 중, 봄비 속에서 노란 민들레 싹을 만납니다. 민들레 꽃을 아름답게 피우기 위해 기꺼이 자신의 몸을 녹여 거름이 되는 강아지 똥의 숭고한 사랑과 생명의 고귀한 가치를 전하는 한국 대표 그림책입니다.',
+    }
+  ],
+  '코스모스': [
+    {
+      id: 'yes24-c1',
+      title: '코스모스 (청소년을 위한)',
+      author: '칼 세이건',
+      publisher: '사이언스북스',
+      publishYear: 2021,
+      isbn: '9788983711892',
+      price: 18000,
+      coverUrl: 'https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788983711892.jpg',
+      yes24Url: 'https://www.yes24.com/Product/Search?domain=BOOK&query=9788983711892',
+      category: '과학/우주',
+      summary: '광대한 우주의 탄생과 별의 진화, 지구와 인류의 기원을 감동적으로 탐구한 20세기 최고의 과학 교양서. 칼 세이건 특유의 시적이고 인문학적인 통찰을 통해 우리 인간이 모두 우주의 별먼지(Stardust)에서 비롯되었음을 일깨우며, 하나뿐인 보금자리 지구의 소중함을 역설합니다.',
+    }
+  ],
+  '만복이네': [
+    {
+      id: 'yes24-m1',
+      title: '만복이네 떡집',
+      author: '김리리 글 / 이승현 그림',
+      publisher: '비룡소',
+      publishYear: 2010,
+      isbn: '9788949161341',
+      price: 11000,
+      coverUrl: 'https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788949161341.jpg',
+      yes24Url: 'https://www.yes24.com/Product/Search?domain=BOOK&query=9788949161341',
+      category: '문학/동화',
+      summary: '마음과 달리 입만 열면 나쁜 말과 심술을 부려 외톨이가 된 초등학생 만복이. 어느 날 길모퉁이에서 착한 일과 칭찬, 웃음으로만 값을 치를 수 있는 신비한 떡집을 발견합니다. 찹쌀떡, 꿀떡 등 신비한 마법 떡을 먹으며 친구의 마음을 이해하고 고운 말을 사용하는 따뜻한 아이로 변해가는 인기 베스트셀러 창작동화입니다.',
+    }
+  ],
+  '달러구트': [
+    {
+      id: 'yes24-d1',
+      title: '달러구트 꿈 백화점 1',
+      author: '이미예',
+      publisher: '팩토리나인',
+      publishYear: 2020,
+      isbn: '9791165341909',
+      price: 13800,
+      coverUrl: 'https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9791165341909.jpg',
+      yes24Url: 'https://www.yes24.com/Product/Search?domain=BOOK&query=9791165341909',
+      category: '판타지/모험',
+      summary: '잠들어야만 입장할 수 있는 신비로운 마을의 중심, 온갖 꿈을 파는 \'달러구트 꿈 백화점\'. 하늘을 나는 꿈, 좋아하던 사람을 만나는 꿈, 그리고 과거의 아픔을 극복하게 해주는 악몽까지. 손님들이 꿈을 꾼 후 느끼는 감정으로 값을 치르는 독특한 세계관 속에서 지친 현대인들의 마음을 따뜻하게 안아주는 힐링 판타지 소설입니다.',
     }
   ]
 };
