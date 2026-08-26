@@ -218,9 +218,9 @@ export default function BookDetailPage() {
               도서관 대출 외에 나만의 책으로 평생 소장하고 싶다면 YES24에서 직접 구매하실 수 있습니다.
             </p>
             <a
-              href={book.yes24Url || `https://www.yes24.com/Product/Search?domain=BOOK&query=${encodeURIComponent(book.title)}`}
+              href={book.yes24Url || `https://www.yes24.com/Product/Search?domain=BOOK&query=${encodeURIComponent(book.isbn || book.title)}`}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="w-full py-2.5 px-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-bold transition shadow flex items-center justify-center gap-2"
             >
               <span>🛒 YES24에서 이 책 구매하기</span>

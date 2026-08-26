@@ -13,18 +13,86 @@ const STORAGE_KEYS = {
   LIBRARY_CONFIG: 'starry_library_config_v1',
 };
 
+// Known books master mapping for instant reliable cover and direct YES24 goods links
+const KNOWN_COVER_MAP: Record<string, { coverUrl: string; yes24Url: string; price: number; isbn: string }> = {
+  '와니니': {
+    coverUrl: 'https://image.yes24.com/goods/18797931/L',
+    yes24Url: 'https://www.yes24.com/Product/Goods/18797931',
+    price: 10800,
+    isbn: '9788936442804',
+  },
+  '마당을 나온 암탉': {
+    coverUrl: 'https://image.yes24.com/goods/277322/L',
+    yes24Url: 'https://www.yes24.com/Product/Goods/277322',
+    price: 11000,
+    isbn: '9788971968710',
+  },
+  '아몬드': {
+    coverUrl: 'https://image.yes24.com/goods/37604543/L',
+    yes24Url: 'https://www.yes24.com/Product/Goods/37604543',
+    price: 12000,
+    isbn: '9788936434120',
+  },
+  '어린 왕자': {
+    coverUrl: 'https://image.yes24.com/goods/20042456/L',
+    yes24Url: 'https://www.yes24.com/Product/Goods/20042456',
+    price: 9800,
+    isbn: '9788932917245',
+  },
+  '불편한 편의점': {
+    coverUrl: 'https://image.yes24.com/goods/99308021/L',
+    yes24Url: 'https://www.yes24.com/Product/Goods/99308021',
+    price: 14000,
+    isbn: '9791161571188',
+  },
+  '긴긴밤': {
+    coverUrl: 'https://image.yes24.com/goods/97093149/L',
+    yes24Url: 'https://www.yes24.com/Product/Goods/97093149',
+    price: 11500,
+    isbn: '9788954677189',
+  }
+};
+
+const enrichBook = (b: Book): Book => {
+  let enriched = { ...b };
+
+  for (const [key, meta] of Object.entries(KNOWN_COVER_MAP)) {
+    if (b.title?.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(b.title?.toLowerCase())) {
+      if (!enriched.coverUrl) enriched.coverUrl = meta.coverUrl;
+      if (!enriched.yes24Url) enriched.yes24Url = meta.yes24Url;
+      if (!enriched.price) enriched.price = meta.price;
+      if (!enriched.isbn || enriched.isbn.startsWith('97889미정')) enriched.isbn = meta.isbn;
+      break;
+    }
+  }
+
+  if (!enriched.yes24Url) {
+    enriched.yes24Url = `https://www.yes24.com/Product/Search?domain=BOOK&query=${encodeURIComponent(enriched.isbn || enriched.title)}`;
+  }
+  if (!enriched.price) {
+    enriched.price = 12000;
+  }
+
+  return enriched;
+};
+
 // Safe LocalStorage helpers
 export const getStoredBooks = (): Book[] => {
-  if (typeof window === 'undefined') return INITIAL_BOOKS;
+  if (typeof window === 'undefined') return INITIAL_BOOKS.map(enrichBook);
   const saved = localStorage.getItem(STORAGE_KEYS.BOOKS);
   if (!saved) {
-    localStorage.setItem(STORAGE_KEYS.BOOKS, JSON.stringify(INITIAL_BOOKS));
-    return INITIAL_BOOKS;
+    const initialized = INITIAL_BOOKS.map(enrichBook);
+    localStorage.setItem(STORAGE_KEYS.BOOKS, JSON.stringify(initialized));
+    return initialized;
   }
   try {
-    return JSON.parse(saved);
+    const parsed: Book[] = JSON.parse(saved);
+    const enriched = parsed.map(enrichBook);
+    // Persist enriched data back
+    localStorage.setItem(STORAGE_KEYS.BOOKS, JSON.stringify(enriched));
+    return enriched;
   } catch (e) {
-    return INITIAL_BOOKS;
+    return INITIAL_BOOKS.map(enrichBook);
   }
 };
 
