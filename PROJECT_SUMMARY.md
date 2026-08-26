@@ -9,7 +9,7 @@
 * **설계 규모**:
   * 📚 **소장 도서**: 약 10,000권 규모 (초·중등 문학, 과학, 역사, 판타지, 철학 등)
   * 👥 **이용 회원**: 약 3,000명 규모 (학생 65%, 교사 10%, 학부모/일반주민 25%)
-  * 🤖 **AI 심층 질의**: Google Gemini 1.5 Flash 기반 3단계 연령별 독서 멘토링
+  * 🤖 **AI 심층 질의**: Google Gemini Flash 최신 AI 기반 3단계 연령별 독서 멘토링
 
 ---
 
@@ -21,7 +21,7 @@
 | **GitHub 코드 저장소** | [https://github.com/ai20251209/library-kecf](https://github.com/ai20251209/library-kecf) | 소스코드 버전 관리 및 CI/CD 자동 배포 |
 | **클라우드 호스팅** | **Vercel (Serverless)** | 초고속 글로벌 CDN, SSL 보안(HTTPS) 무중단 호스팅 |
 | **클라우드 데이터베이스** | **Supabase (PostgreSQL - Seoul Region)** | 도서/회원/대출 영구 저장 및 자동 카운팅 트리거 |
-| **인공지능 엔진** | **Google Gemini 1.5 Flash + 스마트 시뮬레이션** | 연령별 맞춤형 사고력 확장 대화 및 퀴즈 생성 |
+| **인공지능 엔진** | **Google Gemini Flash (최신 모델) + 스마트 시뮬레이션** | 연령별 맞춤형 사고력 확장 대화 및 퀴즈 생성 |
 
 ---
 

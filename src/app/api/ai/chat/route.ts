@@ -26,10 +26,11 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Call Real Gemini API
+    // Call Real Gemini API (Latest Gemini Flash Model)
     const genAI = new GoogleGenerativeAI(apiKey);
+    const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: modelName,
       systemInstruction: getSystemPromptForLevel(level, bookContext),
     });
 
