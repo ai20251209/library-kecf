@@ -63,36 +63,61 @@ export default function BookCard({ book, onBookUpdated }: BookCardProps) {
       
       {/* Visual Book Cover Area */}
       <Link href={`/books/${book.id}`} className="block relative overflow-hidden">
-        <div className={`h-48 w-full bg-gradient-to-br ${book.coverColor} p-5 flex flex-col justify-between text-white relative transition-transform duration-300 group-hover:scale-[1.02]`}>
-          
-          {/* Top badges */}
-          <div className="flex items-center justify-between z-10">
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30">
-              {book.category}
-            </span>
-            <span className={`text-xs font-semibold px-2.5 py-0.8 rounded-full border flex items-center gap-1 ${badge.bg} shadow-sm`}>
-              <span>{badge.emoji}</span>
-              <span>{badge.label}</span>
-            </span>
+        {book.coverUrl ? (
+          <div className="h-52 w-full bg-slate-100 relative overflow-hidden flex items-center justify-center p-3 border-b border-slate-100 group-hover:scale-[1.02] transition-transform duration-300">
+            <img 
+              src={book.coverUrl} 
+              alt={book.title} 
+              className="h-full max-h-44 object-contain rounded-lg shadow-md"
+            />
+            {/* Top badges */}
+            <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-900/70 text-white backdrop-blur-sm">
+                {book.category}
+              </span>
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border flex items-center gap-0.5 ${badge.bg} shadow-sm backdrop-blur-sm`}>
+                <span>{badge.emoji}</span>
+                <span>{badge.label}</span>
+              </span>
+            </div>
+            {book.price && (
+              <span className="absolute bottom-2 right-2 bg-orange-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
+                {book.price.toLocaleString()}원
+              </span>
+            )}
           </div>
+        ) : (
+          <div className={`h-48 w-full bg-gradient-to-br ${book.coverColor} p-5 flex flex-col justify-between text-white relative transition-transform duration-300 group-hover:scale-[1.02]`}>
+            
+            {/* Top badges */}
+            <div className="flex items-center justify-between z-10">
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30">
+                {book.category}
+              </span>
+              <span className={`text-xs font-semibold px-2.5 py-0.8 rounded-full border flex items-center gap-1 ${badge.bg} shadow-sm`}>
+                <span>{badge.emoji}</span>
+                <span>{badge.label}</span>
+              </span>
+            </div>
 
-          {/* Center Emoji + Decorative Book Spine */}
-          <div className="flex items-center justify-center my-auto">
-            <span className="text-6xl drop-shadow-md transition-transform duration-300 group-hover:scale-110">
-              {book.coverEmoji}
-            </span>
-          </div>
+            {/* Center Emoji + Decorative Book Spine */}
+            <div className="flex items-center justify-center my-auto">
+              <span className="text-6xl drop-shadow-md transition-transform duration-300 group-hover:scale-110">
+                {book.coverEmoji}
+              </span>
+            </div>
 
-          {/* Bottom Title & Author in Cover */}
-          <div className="z-10 bg-black/25 backdrop-blur-sm -mx-5 -mb-5 p-3 px-4 border-t border-white/10">
-            <h3 className="font-bold text-base leading-tight truncate text-white drop-shadow">
-              {book.title}
-            </h3>
-            <p className="text-xs text-white/80 truncate mt-0.5">
-              {book.author} · {book.publisher}
-            </p>
+            {/* Bottom Title & Author in Cover */}
+            <div className="z-10 bg-black/25 backdrop-blur-sm -mx-5 -mb-5 p-3 px-4 border-t border-white/10">
+              <h3 className="font-bold text-base leading-tight truncate text-white drop-shadow">
+                {book.title}
+              </h3>
+              <p className="text-xs text-white/80 truncate mt-0.5">
+                {book.author} · {book.publisher}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </Link>
 
       {/* Body / Info */}

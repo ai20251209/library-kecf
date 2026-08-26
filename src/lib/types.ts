@@ -24,6 +24,8 @@ export interface Book {
   coverEmoji: string; // Fallback or cute visual emoji
   coverColor: string; // Gradient color theme for visual card
   coverUrl?: string;
+  yes24Url?: string; // YES24 도서 상세 및 구매 링크
+  price?: number; // 정가 (원)
   status: 'available' | 'borrowed' | 'reserved';
   totalCopies: number;
   availableCopies: number;
@@ -39,6 +41,17 @@ export interface Book {
     answerIndex: number;
     explanation: string;
   }[];
+}
+
+export interface LibraryConfig {
+  libraryName: string; // 도서관 명칭 (예: 별빛 작은도서관)
+  subTitle: string;    // 슬로건
+  contactPhone: string;
+  location: string;
+  adminPin: string;    // 사서 마스터 PIN (기본: 1234)
+  geminiApiKey?: string;
+  enableYes24Sync: boolean;
+  themeColor?: string;
 }
 
 export interface Member {

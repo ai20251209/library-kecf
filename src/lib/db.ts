@@ -1,6 +1,6 @@
 'use client';
 
-import { Book, Member, LoanRecord, ReadingLog } from './types';
+import { Book, Member, LoanRecord, ReadingLog, LibraryConfig } from './types';
 import { INITIAL_BOOKS, INITIAL_MEMBERS } from '../data/sampleBooks';
 
 const STORAGE_KEYS = {
@@ -10,6 +10,7 @@ const STORAGE_KEYS = {
   READING_LOGS: 'starry_reading_logs_v1',
   CURRENT_MEMBER: 'starry_current_member_v1',
   GEMINI_API_KEY: 'starry_gemini_api_key',
+  LIBRARY_CONFIG: 'starry_library_config_v1',
 };
 
 // Safe LocalStorage helpers
@@ -262,4 +263,32 @@ export const returnBook = (loanId: string): { success: boolean; message: string 
   }
 
   return { success: true, message: `"${loan.bookTitle}" 반납이 정상 처리되었습니다! (+30 독서포인트 지급)` };
+};
+
+export const DEFAULT_LIBRARY_CONFIG: LibraryConfig = {
+  libraryName: '별빛 북스페이스 작은도서관',
+  subTitle: '초·중학생을 위한 AI 독서 메이트 & 스마트 작은도서관',
+  contactPhone: '02-1234-5678',
+  location: '마을 커뮤니티 센터 2층',
+  adminPin: '1234',
+  enableYes24Sync: true,
+};
+
+export const getStoredLibraryConfig = (): LibraryConfig => {
+  if (typeof window === 'undefined') return DEFAULT_LIBRARY_CONFIG;
+  const saved = localStorage.getItem(STORAGE_KEYS.LIBRARY_CONFIG);
+  if (!saved) {
+    localStorage.setItem(STORAGE_KEYS.LIBRARY_CONFIG, JSON.stringify(DEFAULT_LIBRARY_CONFIG));
+    return DEFAULT_LIBRARY_CONFIG;
+  }
+  try {
+    return { ...DEFAULT_LIBRARY_CONFIG, ...JSON.parse(saved) };
+  } catch (e) {
+    return DEFAULT_LIBRARY_CONFIG;
+  }
+};
+
+export const saveStoredLibraryConfig = (config: LibraryConfig) => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(STORAGE_KEYS.LIBRARY_CONFIG, JSON.stringify(config));
 };

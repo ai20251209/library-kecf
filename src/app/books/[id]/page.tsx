@@ -17,7 +17,9 @@ import {
   Send,
   Star,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  ShoppingCart,
+  ExternalLink
 } from 'lucide-react';
 import { getStoredBooks, getCurrentUser, borrowBook, returnBook, getStoredLoans, saveStoredReadingLogs, getStoredReadingLogs } from '@/lib/db';
 import { Book, Member, LoanRecord, ReadingLog } from '@/lib/types';
@@ -158,27 +160,72 @@ export default function BookDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Book Cover Card */}
-        <div className="lg:col-span-4">
-          <div className={`w-full rounded-3xl bg-gradient-to-br ${book.coverColor} p-8 text-white shadow-2xl relative overflow-hidden flex flex-col justify-between min-h-[380px]`}>
+        <div className="lg:col-span-4 space-y-4">
+          {book.coverUrl ? (
+            <div className="rounded-3xl bg-white p-4 shadow-2xl border border-slate-200 text-center relative overflow-hidden group">
+              <img 
+                src={book.coverUrl} 
+                alt={book.title}
+                className="w-full max-h-[420px] object-contain rounded-2xl mx-auto shadow-md transition duration-300 group-hover:scale-[1.02]"
+              />
+              <div className="mt-3 flex items-center justify-between text-xs px-2">
+                <span className="font-bold text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-full">
+                  {book.category}
+                </span>
+                <span className="font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                  {book.recommendAge}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className={`w-full rounded-3xl bg-gradient-to-br ${book.coverColor} p-8 text-white shadow-2xl relative overflow-hidden flex flex-col justify-between min-h-[380px]`}>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30">
+                  {book.category}
+                </span>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-black/20 backdrop-blur-md">
+                  {book.recommendAge}
+                </span>
+              </div>
+
+              <div className="my-auto text-center py-6">
+                <span className="text-8xl drop-shadow-2xl inline-block animate-float">
+                  {book.coverEmoji}
+                </span>
+              </div>
+
+              <div className="bg-black/30 backdrop-blur-md -mx-8 -mb-8 p-5 border-t border-white/10 text-center">
+                <div className="font-bold text-lg leading-tight drop-shadow">{book.title}</div>
+                <div className="text-xs text-white/80 mt-1">{book.author} · {book.publisher} ({book.publishYear})</div>
+              </div>
+            </div>
+          )}
+
+          {/* YES24 Buy Now Banner */}
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-100/60 border border-orange-200 shadow-sm space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30">
-                {book.category}
+              <span className="text-[11px] font-black text-orange-800 uppercase tracking-wider flex items-center gap-1">
+                <ShoppingCart className="w-3.5 h-3.5 text-orange-600" />
+                개인 도서 구매 (YES24 연계)
               </span>
-              <span className="text-xs font-bold px-3 py-1 rounded-full bg-black/20 backdrop-blur-md">
-                {book.recommendAge}
-              </span>
+              {book.price && (
+                <span className="text-xs font-bold text-slate-800">
+                  정가 {book.price.toLocaleString()}원
+                </span>
+              )}
             </div>
-
-            <div className="my-auto text-center py-6">
-              <span className="text-8xl drop-shadow-2xl inline-block animate-float">
-                {book.coverEmoji}
-              </span>
-            </div>
-
-            <div className="bg-black/30 backdrop-blur-md -mx-8 -mb-8 p-5 border-t border-white/10 text-center">
-              <div className="font-bold text-lg leading-tight drop-shadow">{book.title}</div>
-              <div className="text-xs text-white/80 mt-1">{book.author} · {book.publisher} ({book.publishYear})</div>
-            </div>
+            <p className="text-[11px] text-slate-600 leading-snug">
+              도서관 대출 외에 나만의 책으로 평생 소장하고 싶다면 YES24에서 직접 구매하실 수 있습니다.
+            </p>
+            <a
+              href={book.yes24Url || `https://www.yes24.com/Product/Search?domain=BOOK&query=${encodeURIComponent(book.title)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full py-2.5 px-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-bold transition shadow flex items-center justify-center gap-2"
+            >
+              <span>🛒 YES24에서 이 책 구매하기</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
           </div>
         </div>
 
@@ -193,6 +240,11 @@ export default function BookDetailPage() {
               <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">
                 권장: {book.recommendAge}
               </span>
+              {book.price && (
+                <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md">
+                  정가: {book.price.toLocaleString()}원
+                </span>
+              )}
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-black text-slate-900 leading-tight">

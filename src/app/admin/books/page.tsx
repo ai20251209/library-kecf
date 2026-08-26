@@ -15,7 +15,11 @@ import {
   ArrowLeft,
   Barcode,
   Layers,
-  Upload
+  Upload,
+  ShoppingCart,
+  ExternalLink,
+  BookMarked,
+  Image as ImageIcon
 } from 'lucide-react';
 import { getStoredBooks, saveStoredBooks, getStoredApiKey } from '@/lib/db';
 import { Book, TargetLevel, BookCategory } from '@/lib/types';
@@ -38,12 +42,21 @@ export default function AdminBooksPage() {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // YES24 Search State
+  const [isYes24ModalOpen, setIsYes24ModalOpen] = useState(false);
+  const [yes24Query, setYes24Query] = useState('');
+  const [yes24Results, setYes24Results] = useState<any[]>([]);
+  const [isYes24Searching, setIsYes24Searching] = useState(false);
+
   // Form State
   const [formData, setFormData] = useState<Partial<Book>>({
     title: '',
     author: '',
     publisher: '',
     publishYear: 2024,
+    price: 15000,
+    yes24Url: '',
+    coverUrl: '',
     isbn: '',
     category: '문학/동화',
     targetLevel: 'elem_high',
@@ -67,6 +80,87 @@ export default function AdminBooksPage() {
   useEffect(() => {
     loadBooks();
   }, []);
+
+  // Search YES24 Open Catalog
+  const handleSearchYes24 = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!yes24Query.trim()) {
+      alert('검색할 도서명이나 ISBN을 입력해주세요.');
+      return;
+    }
+
+    setIsYes24Searching(true);
+    try {
+      const res = await fetch(`/api/books/yes24?q=${encodeURIComponent(yes24Query.trim())}`);
+      const data = await res.json();
+      if (data.success && data.items) {
+        setYes24Results(data.items);
+      } else {
+        setYes24Results([]);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('YES24 서지정보를 가져오는 중 오류가 발생했습니다.');
+    } finally {
+      setIsYes24Searching(false);
+    }
+  };
+
+  // Apply YES24 Book to Form + Trigger AI Auto Enrichment
+  const handleSelectYes24Book = async (item: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      title: item.title,
+      author: item.author,
+      publisher: item.publisher,
+      publishYear: item.publishYear,
+      price: item.price || 15000,
+      coverUrl: item.coverUrl,
+      yes24Url: item.yes24Url,
+      category: (item.category as BookCategory) || '문학/동화',
+      summary: item.summary,
+      isbn: prev.isbn || `97911${Math.floor(10000000 + Math.random() * 90000000)}`,
+    }));
+
+    setIsYes24ModalOpen(false);
+    setIsModalOpen(true);
+    setToastMessage(`YES24 서지정보를 불러왔습니다. AI 분류 및 퀴즈 생성을 시작합니다.`);
+
+    // Trigger AI enrich in background
+    setIsAiLoading(true);
+    try {
+      const apiKey = getStoredApiKey();
+      const res = await fetch('/api/ai/metadata', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: item.title,
+          isbn: formData.isbn,
+          userApiKey: apiKey
+        })
+      });
+
+      const data = await res.json();
+      if (data) {
+        setFormData((prev) => ({
+          ...prev,
+          category: data.category || prev.category,
+          targetLevel: data.targetLevel || prev.targetLevel,
+          callNumber: data.callNumber || prev.callNumber || '813.8-자동01',
+          location: data.location || prev.location || '작은도서관 종합서가 A',
+          recommendAge: data.recommendAge || prev.recommendAge,
+          tags: data.tags || prev.tags,
+          deepQuestions: data.deepQuestions || prev.deepQuestions,
+          sampleQuizzes: data.sampleQuizzes || prev.sampleQuizzes,
+        }));
+        confetti({ particleCount: 40, spread: 50 });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
   const handleAiAutoFill = async () => {
     if (!formData.title?.trim()) {
@@ -217,7 +311,20 @@ export default function AdminBooksPage() {
           </h1>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* YES24 Auto Sync Button */}
+          <button
+            onClick={() => {
+              setYes24Results([]);
+              setYes24Query('');
+              setIsYes24ModalOpen(true);
+            }}
+            className="px-4 py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:brightness-110 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5 animate-pulse"
+          >
+            <ShoppingCart className="w-4 h-4" />
+            <span>YES24 서지정보 자동 연동</span>
+          </button>
+
           <button
             onClick={handleExportCsv}
             className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5"
@@ -251,7 +358,7 @@ export default function AdminBooksPage() {
             className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4" />
-            <span>도서 신규 등록 (AI 지원)</span>
+            <span>직접 도서 등록</span>
           </button>
         </div>
       </div>
@@ -288,6 +395,7 @@ export default function AdminBooksPage() {
                 <th className="p-3.5">대상 학년</th>
                 <th className="p-3.5">청구기호 / 위치</th>
                 <th className="p-3.5 text-center">재고(대출가능/총)</th>
+                <th className="p-3.5 text-center">YES24</th>
                 <th className="p-3.5 text-right">관리</th>
               </tr>
             </thead>
@@ -295,17 +403,34 @@ export default function AdminBooksPage() {
               {filteredBooks.map((b) => (
                 <tr key={b.id} className="hover:bg-slate-50 transition">
                   <td className="p-3.5">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xl">{b.coverEmoji}</span>
+                    <div className="flex items-center space-x-3">
+                      {b.coverUrl ? (
+                        <img 
+                          src={b.coverUrl} 
+                          alt={b.title} 
+                          className="w-10 h-14 object-cover rounded shadow-sm shrink-0 border border-slate-200"
+                        />
+                      ) : (
+                        <div className="w-10 h-14 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center text-xl shrink-0">
+                          {b.coverEmoji || '📚'}
+                        </div>
+                      )}
                       <div>
-                        <div className="font-bold text-slate-900">{b.title}</div>
+                        <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                          <span>{b.title}</span>
+                          {b.price && (
+                            <span className="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 font-mono">
+                              {b.price.toLocaleString()}원
+                            </span>
+                          )}
+                        </div>
                         <div className="font-mono text-[10px] text-slate-400">ISBN: {b.isbn}</div>
                       </div>
                     </div>
                   </td>
 
                   <td className="p-3.5">
-                    <div>{b.author}</div>
+                    <div className="font-medium text-slate-800">{b.author}</div>
                     <div className="text-[11px] text-slate-400">{b.publisher} ({b.publishYear})</div>
                   </td>
 
@@ -329,6 +454,23 @@ export default function AdminBooksPage() {
                       {b.availableCopies}
                     </span>
                     <span className="text-slate-400"> / {b.totalCopies}권</span>
+                  </td>
+
+                  <td className="p-3.5 text-center">
+                    {b.yes24Url ? (
+                      <a
+                        href={b.yes24Url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-orange-600 hover:text-orange-700 hover:underline bg-orange-50 px-2 py-1 rounded-lg border border-orange-200"
+                        title="YES24에서 구매하기"
+                      >
+                        <ShoppingCart className="w-3 h-3" />
+                        <span>구매링크</span>
+                      </a>
+                    ) : (
+                      <span className="text-[10px] text-slate-300">-</span>
+                    )}
                   </td>
 
                   <td className="p-3.5 text-right space-x-1">
@@ -357,6 +499,166 @@ export default function AdminBooksPage() {
         </div>
       </div>
 
+      {/* YES24 Quick Search & Auto-Sync Modal */}
+      {isYes24ModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100 my-8 space-y-5">
+            
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center">
+                  <ShoppingCart className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">
+                    YES24 공개 서지정보 실시간 자동 검색
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    도서명 또는 ISBN을 검색하면 실물 표지, 줄거리, 가격, 구매링크를 1초 만에 가져옵니다.
+                  </p>
+                </div>
+              </div>
+              <button onClick={() => setIsYes24ModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Search Input */}
+            <form onSubmit={handleSearchYes24} className="space-y-3">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={yes24Query}
+                    onChange={(e) => setYes24Query(e.target.value)}
+                    placeholder="도서명 또는 13자리 ISBN 입력 (예: 불편한 편의점, 긴긴밤, 9791168415300)"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isYes24Searching}
+                  className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl text-sm transition shadow shrink-0 flex items-center gap-1.5"
+                >
+                  {isYes24Searching ? (
+                    <span>검색 중...</span>
+                  ) : (
+                    <>
+                      <Search className="w-4 h-4" />
+                      <span>서지 검색</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Sample keyword chips */}
+              <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+                <span className="font-semibold text-slate-400">인기 추천 도서:</span>
+                {['불편한 편의점', '긴긴밤', '달러구트 꿈 백화점', '마법천자문', '어린 왕자'].map((kw) => (
+                  <button
+                    key={kw}
+                    type="button"
+                    onClick={() => {
+                      setYes24Query(kw);
+                      // Trigger search immediately
+                      fetch(`/api/books/yes24?q=${encodeURIComponent(kw)}`)
+                        .then(r => r.json())
+                        .then(d => setYes24Results(d.items || []));
+                    }}
+                    className="px-2.5 py-1 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 rounded-lg text-[11px] font-medium transition"
+                  >
+                    #{kw}
+                  </button>
+                ))}
+              </div>
+            </form>
+
+            {/* Search Results List */}
+            <div className="max-h-96 overflow-y-auto space-y-3 pr-1">
+              {yes24Results.length === 0 ? (
+                <div className="text-center py-10 text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <BookMarked className="w-10 h-10 mx-auto text-slate-300 mb-2" />
+                  <p className="text-sm font-medium">검색어를 입력하고 [서지 검색] 버튼을 눌러주세요.</p>
+                  <p className="text-xs text-slate-400 mt-1">YES24의 모든 서지정보와 실물 표지가 실시간으로 연동됩니다.</p>
+                </div>
+              ) : (
+                yes24Results.map((item) => (
+                  <div 
+                    key={item.id}
+                    className="p-4 rounded-2xl border border-slate-200 hover:border-orange-300 hover:bg-orange-50/40 transition flex flex-col sm:flex-row gap-4 items-start bg-white shadow-sm"
+                  >
+                    {item.coverUrl ? (
+                      <img 
+                        src={item.coverUrl} 
+                        alt={item.title} 
+                        className="w-20 h-28 object-cover rounded-lg shadow border border-slate-200 shrink-0"
+                      />
+                    ) : (
+                      <div className="w-20 h-28 bg-slate-100 rounded-lg flex items-center justify-center text-3xl shrink-0">
+                        📖
+                      </div>
+                    )}
+
+                    <div className="flex-1 space-y-1.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="px-2 py-0.5 rounded bg-orange-100 text-orange-800 text-[10px] font-bold">
+                          {item.category}
+                        </span>
+                        {item.price && (
+                          <span className="text-xs font-bold text-slate-900">
+                            정가: {item.price.toLocaleString()}원
+                          </span>
+                        )}
+                        <a
+                          href={item.yes24Url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] text-slate-400 hover:text-orange-600 hover:underline ml-auto"
+                        >
+                          <span>YES24 상품보기</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+
+                      <h4 className="font-bold text-slate-900 text-sm">{item.title}</h4>
+                      <p className="text-xs text-slate-600 font-medium">
+                        {item.author} | {item.publisher} ({item.publishYear})
+                      </p>
+                      <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                        {item.summary}
+                      </p>
+
+                      <div className="pt-2">
+                        <button
+                          type="button"
+                          onClick={() => handleSelectYes24Book(item)}
+                          className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:brightness-110 text-white rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>이 책으로 1초 자동 등록 (AI 퀴즈/청구기호 완성)</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="flex justify-end pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsYes24ModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-800"
+              >
+                닫기
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       {/* Book Registration / Edit Modal with AI Auto-Fill */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
@@ -365,86 +667,117 @@ export default function AdminBooksPage() {
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-brand-600" />
-                {formData.id ? '도서 정보 수정' : '도서 신규 등록 (AI 어시스턴트 지원)'}
+                {formData.id ? '도서 정보 수정' : '도서 신규 등록 (YES24 & AI 지원)'}
               </h3>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* AI Assistant Banner */}
-            <div className="bg-gradient-to-r from-cosmic-50 to-brand-50 border border-cosmic-200 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
+            {/* AI Assistant & YES24 Banner */}
+            <div className="bg-gradient-to-r from-cosmic-50 via-amber-50 to-brand-50 border border-cosmic-200 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="space-y-0.5 text-left">
                 <div className="text-xs font-bold text-cosmic-800 flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-cosmic-600" />
-                  AI 도서 메타데이터 자동 완성
+                  AI 메타데이터 자동 완성 & 서지 분석
                 </div>
                 <div className="text-[11px] text-slate-600">
-                  도서명만 입력하고 버튼을 누르면 줄거리, 청구기호, 권장학년, 심층질문, 퀴즈를 AI가 자동 작성합니다.
+                  도서명 입력 후 버튼을 누르면 줄거리, 청구기호, 권장학년, 심층질문, 퀴즈를 AI가 자동 작성합니다.
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={handleAiAutoFill}
-                disabled={isAiLoading || !formData.title?.trim()}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition shrink-0 flex items-center gap-1.5 shadow ${
-                  isAiLoading || !formData.title?.trim()
-                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-cosmic-600 to-brand-600 text-white hover:brightness-110'
-                }`}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>{isAiLoading ? 'AI 생성 중...' : 'AI 자동 완성'}</span>
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleAiAutoFill}
+                  disabled={isAiLoading || !formData.title?.trim()}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow ${
+                    isAiLoading || !formData.title?.trim()
+                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-cosmic-600 to-brand-600 text-white hover:brightness-110'
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{isAiLoading ? 'AI 생성 중...' : 'AI 메타 자동완성'}</span>
+                </button>
+              </div>
             </div>
 
             {/* Form */}
             <form onSubmit={handleSaveBook} className="space-y-4 text-xs">
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">도서명 *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.title || ''}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="예: 마당을 나온 암탉"
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500"
-                  />
-                </div>
+              {/* Cover Preview & Title */}
+              <div className="flex gap-4 items-start">
+                {formData.coverUrl ? (
+                  <div className="shrink-0 space-y-1 text-center">
+                    <img 
+                      src={formData.coverUrl} 
+                      alt="표지" 
+                      className="w-16 h-24 object-cover rounded-lg border border-slate-200 shadow-sm"
+                    />
+                    <span className="text-[10px] text-emerald-600 font-bold">실물표지 연동</span>
+                  </div>
+                ) : (
+                  <div className="w-16 h-24 bg-slate-100 rounded-lg flex items-center justify-center text-2xl shrink-0 border border-slate-200">
+                    {formData.coverEmoji || '📚'}
+                  </div>
+                )}
 
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">저자 *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.author || ''}
-                    onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                    placeholder="예: 황선미"
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500"
-                  />
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">도서명 *</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.title || ''}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="예: 마당을 나온 암탉"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 font-medium"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">저자 *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.author || ''}
+                        onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                        placeholder="예: 황선미"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">출판사</label>
+                      <input
+                        type="text"
+                        value={formData.publisher || ''}
+                        onChange={(e) => setFormData({ ...formData, publisher: e.target.value })}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">출판사</label>
-                  <input
-                    type="text"
-                    value={formData.publisher || ''}
-                    onChange={(e) => setFormData({ ...formData, publisher: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg"
-                  />
-                </div>
-
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">ISBN</label>
                   <input
                     type="text"
                     value={formData.isbn || ''}
                     onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">정가 (원)</label>
+                  <input
+                    type="number"
+                    value={formData.price || 15000}
+                    onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg font-mono"
                   />
                 </div>
@@ -458,6 +791,31 @@ export default function AdminBooksPage() {
                   >
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
+                </div>
+              </div>
+
+              {/* YES24 URL & Cover URL */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">YES24 상품 링크</label>
+                  <input
+                    type="url"
+                    value={formData.yes24Url || ''}
+                    onChange={(e) => setFormData({ ...formData, yes24Url: e.target.value })}
+                    placeholder="https://www.yes24.com/Product/Goods/..."
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg font-mono text-[11px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">표지 이미지 URL</label>
+                  <input
+                    type="url"
+                    value={formData.coverUrl || ''}
+                    onChange={(e) => setFormData({ ...formData, coverUrl: e.target.value })}
+                    placeholder="https://image.yes24.com/..."
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg font-mono text-[11px]"
+                  />
                 </div>
               </div>
 
@@ -476,7 +834,7 @@ export default function AdminBooksPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">청구기호</label>
+                  <label className="block font-semibold text-slate-700 mb-1">청구기호 (KDC)</label>
                   <input
                     type="text"
                     value={formData.callNumber || ''}

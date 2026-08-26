@@ -15,7 +15,9 @@ import {
   Plus,
   FileSpreadsheet,
   Cpu,
-  Search
+  Search,
+  Settings,
+  ShoppingCart
 } from 'lucide-react';
 import { getStoredBooks, getStoredMembers, getStoredLoans, borrowBook, returnBook } from '@/lib/db';
 import { Book, Member, LoanRecord } from '@/lib/types';
@@ -133,13 +135,20 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/admin/settings"
+            className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-200"
+          >
+            <Settings className="w-4 h-4 text-slate-600" />
+            <span>도서관 맞춤 설정 & AI 키</span>
+          </Link>
           <Link
             href="/admin/books"
             className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5"
           >
             <BookOpen className="w-4 h-4" />
-            <span>도서 관리</span>
+            <span>도서 관리 (YES24 연동)</span>
           </Link>
           <Link
             href="/admin/members"
