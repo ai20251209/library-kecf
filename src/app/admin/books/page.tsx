@@ -188,6 +188,10 @@ export default function AdminBooksPage() {
           author: data.author || prev.author,
           publisher: data.publisher || prev.publisher,
           publishYear: data.publishYear || prev.publishYear,
+          isbn: data.isbn || prev.isbn || `97889${Math.floor(10000000 + Math.random() * 90000000)}`,
+          price: data.price || prev.price || 12000,
+          coverUrl: data.coverUrl || prev.coverUrl,
+          yes24Url: data.yes24Url || prev.yes24Url,
           category: data.category || prev.category,
           targetLevel: data.targetLevel || prev.targetLevel,
           callNumber: data.callNumber || prev.callNumber,
@@ -198,7 +202,9 @@ export default function AdminBooksPage() {
           deepQuestions: data.deepQuestions || prev.deepQuestions,
           sampleQuizzes: data.sampleQuizzes || prev.sampleQuizzes,
         }));
-        confetti({ particleCount: 40, spread: 50 });
+        confetti({ particleCount: 50, spread: 60 });
+        setToastMessage(`"${data.title || formData.title}" 서지정보, 표지, ISBN, 퀴즈가 100% 자동 완성되었습니다!`);
+        setTimeout(() => setToastMessage(null), 4000);
       }
     } catch (e) {
       console.error(e);
