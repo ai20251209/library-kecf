@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export async function POST(req: NextRequest) {
   try {
-    const { title, isbn, userApiKey } = await req.json();
+    const { title, isbn, userApiKey, userModel } = await req.json();
     const apiKey = (userApiKey && userApiKey.trim() !== '') ? userApiKey.trim() : process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
@@ -38,11 +38,14 @@ export async function POST(req: NextRequest) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const candidateModels = [
-      process.env.GEMINI_MODEL || 'gemini-1.5-flash',
-      'gemini-1.5-flash-latest',
+      userModel,
+      process.env.GEMINI_MODEL,
       'gemini-2.0-flash',
-      'gemini-1.5-pro'
-    ];
+      'gemini-2.0-flash-exp',
+      'gemini-1.5-flash',
+      'gemini-1.5-flash-latest',
+      'gemini-1.5-flash-002',
+    ].filter(Boolean) as string[];
 
     const prompt = `
 도서명 "${title}" (ISBN: ${isbn || '미정'})에 대한 작은도서관 LMS 메타데이터를 한국 초등/중학생 수준에 맞춰 반드시 유효한 JSON 형식으로만 생성해줘:
