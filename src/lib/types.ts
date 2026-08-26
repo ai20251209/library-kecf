@@ -45,6 +45,7 @@ export interface Member {
   id: string;
   barcode: string; // 회원증 바코드/QR (예: "STU-2026-0042")
   name: string;
+  birthDate: string; // 생년월일 4자리 MMDD (예: "0512")
   grade: string; // 예: "초등 3학년", "초등 6학년", "중학교 2학년"
   schoolName: string;
   role: 'student' | 'teacher' | 'admin';

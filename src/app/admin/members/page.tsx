@@ -92,6 +92,7 @@ export default function AdminMembersPage() {
       id: formData.id || `mem-${Date.now()}`,
       barcode: formData.barcode || generateNewBarcode(),
       name: formData.name.trim(),
+      birthDate: formData.birthDate || '0512',
       grade: formData.grade || '초등 4학년',
       schoolName: formData.schoolName || '별빛초등학교',
       role: formData.role || 'student',
@@ -417,8 +418,8 @@ export default function AdminMembersPage() {
                 </div>
               </div>
 
-              {/* Barcode & Max Loans */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Barcode, BirthDate & Max Loans */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="font-semibold text-slate-700">회원 바코드 *</label>
@@ -441,7 +442,20 @@ export default function AdminMembersPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">최대 대출 가능 권수</label>
+                  <label className="block font-semibold text-slate-700 mb-1">생년월일 4자리 (비밀번호) *</label>
+                  <input
+                    type="text"
+                    maxLength={4}
+                    required
+                    value={formData.birthDate || '0512'}
+                    onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+                    placeholder="예: 0512 (5월12일)"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg font-mono tracking-wider"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">최대 대출 한도 (권)</label>
                   <input
                     type="number"
                     min={1}

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { getCurrentUser, setCurrentUser, getStoredMembers, getStoredApiKey, saveStoredApiKey } from '@/lib/db';
 import { Member } from '@/lib/types';
+import StudentLoginModal from '@/components/StudentLoginModal';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -186,68 +187,14 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* User Switcher Modal */}
-      {isUserModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <User className="w-5 h-5 text-brand-600" />
-                사용자 전환 (체험 모드)
-              </h3>
-              <button 
-                onClick={() => setIsUserModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <p className="text-xs text-slate-500 my-3">
-              초등 저학년, 고학년, 중학생 및 사서 선생님 계정으로 즉시 전환하여 맞춤형 화면을 체험해보세요.
-            </p>
-
-            <div className="space-y-2 mt-4 max-h-72 overflow-y-auto pr-1">
-              {membersList.map((m) => {
-                const isSelected = currentUser?.id === m.id;
-                return (
-                  <div
-                    key={m.id}
-                    onClick={() => handleSelectUser(m)}
-                    className={`flex items-center justify-between p-3 rounded-xl cursor-pointer border transition ${
-                      isSelected
-                        ? 'border-brand-500 bg-brand-50/70 shadow-sm'
-                        : 'border-slate-200 hover:border-brand-300 hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <span className="text-2xl">{m.avatarEmoji}</span>
-                      <div>
-                        <div className="font-semibold text-sm text-slate-800 flex items-center gap-1.5">
-                          {m.name}
-                          {m.role === 'admin' && (
-                            <span className="text-[10px] bg-slate-800 text-white px-1.5 py-0.5 rounded font-normal">
-                              사서
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs text-slate-500">
-                          {m.schoolName} · {m.grade} (바코드: {m.barcode})
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="text-right text-xs">
-                      <div className="text-brand-600 font-bold">Lv.{m.level}</div>
-                      <div className="text-[11px] text-slate-400">{m.totalBooksRead}권 완독</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Student Login & Profile Modal */}
+      <StudentLoginModal
+        isOpen={isUserModalOpen}
+        onClose={() => setIsUserModalOpen(false)}
+        onLoginSuccess={(m) => {
+          setUserState(m);
+        }}
+      />
 
       {/* Gemini API Key Modal */}
       {isApiModalOpen && (
