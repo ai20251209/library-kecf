@@ -114,7 +114,7 @@ export default function Navbar() {
                 <span>내 독서 통장</span>
               </Link>
 
-              {/* Admin Menu */}
+              {/* Admin Menu with Lock indicator */}
               <Link
                 href="/admin"
                 className={`flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -122,9 +122,11 @@ export default function Navbar() {
                     ? 'bg-slate-900 text-white font-semibold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
+                title="사서 관리자 LMS (비밀번호 잠금)"
               >
                 <ShieldCheck className="w-4 h-4 text-indigo-400" />
-                <span>관리자(사서) LMS</span>
+                <span>사서 LMS</span>
+                <span className="text-[10px] bg-slate-200 text-slate-700 px-1 py-0.2 rounded font-mono">🔒</span>
               </Link>
             </nav>
 
@@ -179,7 +181,7 @@ export default function Navbar() {
           </Link>
           <Link href="/admin" className={`flex flex-col items-center py-1 ${pathname.startsWith('/admin') ? 'text-slate-900 font-bold' : 'text-slate-600'}`}>
             <ShieldCheck className="w-4 h-4" />
-            <span>사서LMS</span>
+            <span>사서LMS 🔒</span>
           </Link>
         </div>
       </header>
