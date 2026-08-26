@@ -13,43 +13,49 @@ const STORAGE_KEYS = {
   LIBRARY_CONFIG: 'starry_library_config_v1',
 };
 
-// Known books master mapping for instant reliable cover and direct YES24 goods links
-const KNOWN_COVER_MAP: Record<string, { coverUrl: string; yes24Url: string; price: number; isbn: string }> = {
+// Known books master mapping for instant reliable cover, rich summary and direct YES24 links
+const KNOWN_COVER_MAP: Record<string, { coverUrl: string; yes24Url: string; price: number; isbn: string; summary: string }> = {
   '와니니': {
-    coverUrl: 'https://image.yes24.com/goods/18797931/L',
-    yes24Url: 'https://www.yes24.com/Product/Goods/18797931',
+    coverUrl: 'https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788936442804.jpg',
+    yes24Url: 'https://www.yes24.com/Product/Search?domain=BOOK&query=9788936442804',
     price: 10800,
     isbn: '9788936442804',
+    summary: '세렝게티 초원의 마디바 사자 무리에서 가장 작고 약하게 태어난 어린 암사자 와니니. 무리의 규칙을 어겼다는 억울한 오해를 받고 홀로 거친 초원에 쫓겨납니다. 굶주림과 하이에나, 거대한 수사자들의 위협 속에서 와니니는 자신처럼 무리에서 밀려난 외톨이 친구들(아산테, 잠보, 말라피)을 만나 작은 무리를 이룹니다. 서로의 약점을 감싸 안으며 초원의 사계절을 버텨내고 마침내 스스로의 힘으로 진정한 용기와 연대의 가치를 증명해내는 대한민국 대표 아동문학 성장 걸작입니다.',
   },
   '마당을 나온 암탉': {
-    coverUrl: 'https://image.yes24.com/goods/277322/L',
-    yes24Url: 'https://www.yes24.com/Product/Goods/277322',
+    coverUrl: 'https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788971968710.jpg',
+    yes24Url: 'https://www.yes24.com/Product/Search?domain=BOOK&query=9788971968710',
     price: 11000,
     isbn: '9788971968710',
+    summary: '양계장 좁은 철장에 갇혀 알만 낳던 암탉 \'잎싹\'. 자신의 알을 직접 품어 병아리를 탄생시키겠다는 간절한 소망을 품고 마당을 탈출합니다. 숲속에서 버려진 청둥오리 알을 품어 아기 오리 \'초록머리\'를 낳아 기르며, 천적 족제비의 위협 속에서 목숨을 바쳐 자식을 지켜냅니다. 모성애와 자유, 그리고 자연의 순환에 대한 깊은 철학적 울림을 전하는 한국 아동문학의 불멸의 고전입니다.',
   },
   '아몬드': {
-    coverUrl: 'https://image.yes24.com/goods/37604543/L',
-    yes24Url: 'https://www.yes24.com/Product/Goods/37604543',
+    coverUrl: 'https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788936434120.jpg',
+    yes24Url: 'https://www.yes24.com/Product/Search?domain=BOOK&query=9788936434120',
     price: 12000,
     isbn: '9788936434120',
+    summary: '뇌 속 편도체(아몬드) 크기가 작아 분노도 공포도 느끼지 못하는 알렉시티미아(감정표현불능증)를 앓는 16세 소년 윤재. 비극적인 사고로 가족을 잃고 세상에 홀로 남겨진 윤재 앞에, 어두운 상처로 가득 찬 소년 \'곤이\'와 맑은 영혼의 소녀 \'도라\'가 나타납니다. 서로의 결핍을 마주하며 타인의 고통에 공감하는 법을 배워가는 뭉클한 청소년 성장 소설입니다.',
   },
   '어린 왕자': {
-    coverUrl: 'https://image.yes24.com/goods/20042456/L',
-    yes24Url: 'https://www.yes24.com/Product/Goods/20042456',
+    coverUrl: 'https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788932917245.jpg',
+    yes24Url: 'https://www.yes24.com/Product/Search?domain=BOOK&query=9788932917245',
     price: 9800,
     isbn: '9788932917245',
+    summary: '사하라 사막에 불시착한 비행사가 B612 소행성에서 온 어린 왕자를 만나며 시작되는 이야기. 장미꽃 한 송이를 사랑했지만 떠나올 수밖에 없었던 순수한 왕자가 여우를 만나 "가장 중요한 것은 눈에 보이지 않고 마음으로 보아야 한다"는 진리를 깨달아가는 불후의 세계 명작입니다.',
   },
   '불편한 편의점': {
-    coverUrl: 'https://image.yes24.com/goods/99308021/L',
-    yes24Url: 'https://www.yes24.com/Product/Goods/99308021',
+    coverUrl: 'https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9791161571188.jpg',
+    yes24Url: 'https://www.yes24.com/Product/Search?domain=BOOK&query=9791161571188',
     price: 14000,
     isbn: '9791161571188',
+    summary: '서울 청파동 골목 모퉁이에 자리 잡은 낡고 불편한 ALWAYS 편의점. 지갑을 잃어버린 70대 전직 교사 염 여사는 자신의 지갑을 지켜준 노숙인 \'독고\'에게 야간 아르바이트 자리를 제안합니다. 말도 어눌하고 잃어버린 기억 속에 갇혀 있던 독고가 편의점을 오가는 지친 이웃들(취준생, 고단한 가장, 갈등을 겪는 모자 등)의 사연을 따뜻하게 들어주고 온기를 건네며, 편의점은 사람들의 상처를 치유하는 기적과 위로의 공간으로 탈바꿈합니다.',
   },
   '긴긴밤': {
-    coverUrl: 'https://image.yes24.com/goods/97093149/L',
-    yes24Url: 'https://www.yes24.com/Product/Goods/97093149',
+    coverUrl: 'https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788954677189.jpg',
+    yes24Url: 'https://www.yes24.com/Product/Search?domain=BOOK&query=9788954677189',
     price: 11500,
     isbn: '9788954677189',
+    summary: '지구상에 마지막 하나 남은 흰바위코뿔소 \'노든\'과 버려진 알에서 태어난 어린 펭귄의 눈물겨운 동행. 코끼리 무리에서 자라나 가족을 잃고 인간의 전쟁과 동물원을 거치며 깊은 상처를 입은 노든이, 어린 펭귄을 푸른 바다로 데려가기 위해 험난한 사막과 긴긴밤을 건넙니다. 수많은 존재들의 숭고한 사랑과 희생으로 마침내 자신만의 바다에 도달하는 찬란한 생명의 연대를 노래한 감동 대작입니다.',
   }
 };
 
@@ -58,10 +64,13 @@ const enrichBook = (b: Book): Book => {
 
   for (const [key, meta] of Object.entries(KNOWN_COVER_MAP)) {
     if (b.title?.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(b.title?.toLowerCase())) {
-      if (!enriched.coverUrl) enriched.coverUrl = meta.coverUrl;
-      if (!enriched.yes24Url) enriched.yes24Url = meta.yes24Url;
-      if (!enriched.price) enriched.price = meta.price;
-      if (!enriched.isbn || enriched.isbn.startsWith('97889미정')) enriched.isbn = meta.isbn;
+      enriched.coverUrl = meta.coverUrl;
+      enriched.yes24Url = meta.yes24Url;
+      enriched.price = meta.price;
+      enriched.isbn = meta.isbn;
+      if (!enriched.summary || enriched.summary.length < 80) {
+        enriched.summary = meta.summary;
+      }
       break;
     }
   }
