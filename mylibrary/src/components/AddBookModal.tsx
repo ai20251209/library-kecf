@@ -24,6 +24,7 @@ interface AddBookModalProps {
 export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedBook, setSelectedBook] = useState<any | null>(null);
 
@@ -47,6 +48,7 @@ export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalP
     if (!searchQuery.trim()) return;
 
     setIsSearching(true);
+    setHasSearched(true);
     setSearchResults([]);
     setSelectedBook(null);
 
@@ -60,6 +62,7 @@ export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalP
       }
     } catch (err) {
       console.error(err);
+      setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
@@ -198,6 +201,12 @@ export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalP
                     </button>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {hasSearched && !isSearching && searchResults.length === 0 && (
+              <div className="mt-3 pt-3 border-t border-slate-200 p-3 bg-amber-50/60 rounded-xl text-xs text-amber-900 border border-amber-200">
+                🔍 일치하는 도서 목록을 찾지 못했습니다. 아래 도서 정보 입력칸에 책 제목을 직접 입력하여 등록하실 수 있습니다.
               </div>
             )}
           </div>
