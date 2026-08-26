@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 export async function POST(req: NextRequest) {
   try {
     const { title, isbn, userApiKey } = await req.json();
-    const apiKey = userApiKey || process.env.GEMINI_API_KEY;
+    const apiKey = (userApiKey && userApiKey.trim() !== '') ? userApiKey.trim() : process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
       // Return smart simulated auto-completed metadata
@@ -37,26 +37,26 @@ export async function POST(req: NextRequest) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
-    const model = genAI.getGenerativeModel({
-      model: modelName,
-      generationConfig: { responseMimeType: 'application/json' },
-    });
+    const candidateModels = [
+      process.env.GEMINI_MODEL || 'gemini-1.5-flash',
+      'gemini-1.5-flash-latest',
+      'gemini-2.0-flash',
+      'gemini-1.5-pro'
+    ];
 
     const prompt = `
-도서명 "${title}" (ISBN: ${isbn || '미정'})에 대한 작은도서관 LMS 메타데이터를 한국 초등/중학생 수준에 맞춰 JSON으로 생성해줘.
-반드시 아래 JSON 스키마를 만족해야 해:
+도서명 "${title}" (ISBN: ${isbn || '미정'})에 대한 작은도서관 LMS 메타데이터를 한국 초등/중학생 수준에 맞춰 반드시 유효한 JSON 형식으로만 생성해줘:
 {
   "title": "${title}",
   "author": "작가명",
   "publisher": "출판사명",
   "publishYear": 2023,
-  "category": "문학/동화" 또는 "과학/우주" 또는 "역사/사회" 또는 "판타지/모험" 또는 "철학/인성",
-  "targetLevel": "elem_low" (초1-3) 또는 "elem_high" (초4-6) 또는 "middle" (중학생),
-  "callNumber": "한국십진분류 청구기호 예: 813.8-홍12ㄱ",
-  "location": "서가 위치 예: 초등문학 A-04",
+  "category": "문학/동화",
+  "targetLevel": "elem_high",
+  "callNumber": "813.8-홍12ㄱ",
+  "location": "초등문학 A-04",
   "summary": "초/중학생이 흥미를 가질 만한 3줄 요약",
-  "recommendAge": "권장 연령대 예: 초등 5학년 ~ 중학생",
+  "recommendAge": "초등 5학년 ~ 중학생",
   "tags": ["키워드1", "키워드2", "키워드3"],
   "deepQuestions": [
     {"question": "사고력을 넓혀주는 심층 질문 1", "focus": "인물심리"},
@@ -73,9 +73,44 @@ export async function POST(req: NextRequest) {
 }
 `;
 
-    const result = await model.generateContent(prompt);
-    const data = JSON.parse(result.response.text());
-    return NextResponse.json({ ...data, isSimulated: false });
+    for (const modelName of candidateModels) {
+      try {
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          generationConfig: { responseMimeType: 'application/json' },
+        });
+
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+        const data = JSON.parse(text);
+        return NextResponse.json({ ...data, isSimulated: false });
+      } catch (err: any) {
+        console.warn(`Metadata gen with ${modelName} failed:`, err.message);
+      }
+    }
+
+    // Fallback if all models fail
+    return NextResponse.json({
+      title: title || '추천 도서',
+      author: '지은이',
+      publisher: '도서출판 별빛',
+      publishYear: 2024,
+      category: '문학/동화',
+      targetLevel: 'elem_high',
+      callNumber: '813.8-별24',
+      location: '초등서가 B-01',
+      summary: `《${title}》의 감동적인 스토리와 지혜를 담은 추천 도서입니다.`,
+      recommendAge: '초·중등 권장',
+      tags: ['우정', '성장', '상상력'],
+      deepQuestions: [
+        { question: '주인공의 결정을 보고 어떤 생각이 들었나요?', focus: '인물심리' }
+      ],
+      sampleQuizzes: [
+        { question: '주인공이 겪은 가장 큰 시련은?', options: ['모험', '시험', '이사'], answerIndex: 0, explanation: '모험을 통해 성장합니다.' }
+      ],
+      isSimulated: true
+    });
+
   } catch (error: any) {
     console.error('Metadata generation error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

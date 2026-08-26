@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       userApiKey?: string;
     };
 
-    const apiKey = userApiKey || process.env.GEMINI_API_KEY;
+    const apiKey = (userApiKey && userApiKey.trim() !== '') ? userApiKey.trim() : process.env.GEMINI_API_KEY;
     const latestUserMessage = messages[messages.length - 1]?.content || '';
 
     // If no API Key is set, return rich simulated response
@@ -22,38 +22,83 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         reply: simulatedText,
         isSimulated: true,
-        notice: '💡 Gemini API 키를 설정하면 실시간 초거대 생성형 AI로 대화할 수 있습니다 (현재는 고성능 스마트 시뮬레이션 모드 작동 중).'
+        notice: '💡 Gemini API 키를 설정하면 실시간 초거대 생성형 AI로 대화할 수 있습니다.'
       });
     }
 
-    // Call Real Gemini API (Latest Gemini Flash Model)
+    // Call Real Google Gemini API with fallback models
     const genAI = new GoogleGenerativeAI(apiKey);
-    const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
-    const model = genAI.getGenerativeModel({
-      model: modelName,
-      systemInstruction: getSystemPromptForLevel(level, bookContext),
-    });
+    const systemPrompt = getSystemPromptForLevel(level, bookContext);
 
-    const history = messages.slice(0, -1).map((m) => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }],
-    }));
+    // Filter valid history: must start with 'user' and alternate roles
+    const validHistory: { role: 'user' | 'model'; parts: { text: string }[] }[] = [];
+    for (const m of messages.slice(0, -1)) {
+      const role = m.role === 'assistant' ? 'model' : 'user';
+      // Skip if first history item is 'model' (Gemini requirement)
+      if (validHistory.length === 0 && role === 'model') {
+        continue;
+      }
+      validHistory.push({
+        role,
+        parts: [{ text: m.content }]
+      });
+    }
 
-    const chat = model.startChat({
-      history: history.length > 0 ? history : undefined,
-    });
+    const candidateModels = [
+      process.env.GEMINI_MODEL || 'gemini-1.5-flash',
+      'gemini-1.5-flash-latest',
+      'gemini-2.0-flash',
+      'gemini-1.5-pro'
+    ];
 
-    const result = await chat.sendMessage(latestUserMessage);
-    const responseText = result.response.text();
+    let responseText = '';
+    let lastError: any = null;
 
+    for (const modelName of candidateModels) {
+      try {
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          systemInstruction: systemPrompt,
+        });
+
+        if (validHistory.length > 0) {
+          const chat = model.startChat({ history: validHistory });
+          const result = await chat.sendMessage(latestUserMessage);
+          responseText = result.response.text();
+        } else {
+          const result = await model.generateContent(latestUserMessage);
+          responseText = result.response.text();
+        }
+
+        if (responseText) {
+          break; // Success!
+        }
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`Attempt with model ${modelName} failed:`, err.message);
+      }
+    }
+
+    if (responseText) {
+      return NextResponse.json({
+        reply: responseText,
+        isSimulated: false,
+      });
+    }
+
+    // If Gemini API threw an error (e.g. invalid API key or quota exceeded), return simulated with helpful alert
+    console.error('All Gemini model calls failed:', lastError);
+    const simulatedText = getSimulatedAIResponse(latestUserMessage, level, bookContext);
     return NextResponse.json({
-      reply: responseText,
-      isSimulated: false,
+      reply: `${simulatedText}\n\n*(⚠️ Gemini API 오류: ${lastError?.message || 'API 키를 다시 확인해주세요'})*`,
+      isSimulated: true,
+      error: lastError?.message
     });
+
   } catch (error: any) {
-    console.error('AI Chat Error:', error);
+    console.error('AI Chat Global Error:', error);
     return NextResponse.json({
-      reply: '잠시 AI 연결에 문제가 발생하여 스마트 시뮬레이션 모드로 답변합니다. 책에 대해 궁금한 점을 더 물어보세요! ✨',
+      reply: 'AI 통신 연결을 확인하고 있습니다. 잠시 후 다시 질문해 주세요! ✨',
       isSimulated: true,
       error: error.message
     });
